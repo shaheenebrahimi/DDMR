@@ -1,0 +1,8 @@
+/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+  File "/home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/navigation_controller_node.py", line 99
+    if circle_intersection_test(point[0], point[1], self.radius, cell_x, cell_y, self.world['resolution']) # in obstacle
+                                                                                                           ^^^^^^^^^^^^^
+SyntaxError: expected ':'
+
+Sorry: IndentationError: unexpected indent (util.py, line 53)

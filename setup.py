@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 import glob
 
-package_name = 'project_4'
+package_name = 'ddmr'
 
 setup(
     name=package_name,
@@ -15,16 +15,16 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='lgtom',
-    maintainer_email='lgtomotaki@gmail.com',
+    maintainer='sebrahimi',
+    maintainer_email='shaheen.m.ebrahimi@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'velocity_translator_node = project_4.velocity_translator_node:main',
-            'simulator_node = project_4.simulator_node:main',
-            'navigation_controller_node = project_4.navigation_controller_node:main'
+            'velocity_translator_node = ddmr.velocity_translator_node:main',
+            'simulator_node = ddmr.simulator_node:main',
+            'navigation_controller_node = ddmr.navigation_controller_node:main'
         ],
     },
 )

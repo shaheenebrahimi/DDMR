@@ -1,0 +1,7 @@
+/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+  File "/home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/navigation_controller_node.py", line 77
+    self.get_logger().info(f'Obstacles: {self.world['obstacles']}')
+                                                     ^^^^^^^^^
+SyntaxError: f-string: unmatched '['
+

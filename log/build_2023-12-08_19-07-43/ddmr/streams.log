@@ -1,0 +1,28 @@
+[0.828s] Invoking command in '/home/shaheen/ros2_ws/src/DDMR': PYTHONPATH=/home/shaheen/ros2_ws/src/DDMR/build/ddmr/prefix_override:/home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/ddmr build --build-base /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build install --record /home/shaheen/ros2_ws/src/DDMR/build/ddmr/install.log --single-version-externally-managed
+[1.088s] running egg_info
+[1.089s] writing build/ddmr/ddmr.egg-info/PKG-INFO
+[1.089s] writing dependency_links to build/ddmr/ddmr.egg-info/dependency_links.txt
+[1.089s] writing entry points to build/ddmr/ddmr.egg-info/entry_points.txt
+[1.089s] writing requirements to build/ddmr/ddmr.egg-info/requires.txt
+[1.090s] writing top-level names to build/ddmr/ddmr.egg-info/top_level.txt
+[1.091s] reading manifest file 'build/ddmr/ddmr.egg-info/SOURCES.txt'
+[1.092s] writing manifest file 'build/ddmr/ddmr.egg-info/SOURCES.txt'
+[1.093s] running build
+[1.093s] running build_py
+[1.093s] copying ddmr/navigation_controller_node.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+[1.093s] running install
+[1.094s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[1.094s]   warnings.warn(
+[1.094s] running install_lib
+[1.095s] copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/navigation_controller_node.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+[1.096s] byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/navigation_controller_node.py to navigation_controller_node.cpython-310.pyc
+[1.099s] running install_data
+[1.099s] running install_egg_info
+[1.101s] removing '/home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr-0.0.0-py3.10.egg-info' (and everything under it)
+[1.101s] Copying build/ddmr/ddmr.egg-info to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr-0.0.0-py3.10.egg-info
+[1.102s] running install_scripts
+[1.125s] Installing navigation_controller_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+[1.126s] Installing simulator_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+[1.126s] Installing velocity_translator_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+[1.126s] writing list of installed files to '/home/shaheen/ros2_ws/src/DDMR/build/ddmr/install.log'
+[1.164s] Invoked command in '/home/shaheen/ros2_ws/src/DDMR' returned '0': PYTHONPATH=/home/shaheen/ros2_ws/src/DDMR/build/ddmr/prefix_override:/home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base build/ddmr build --build-base /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build install --record /home/shaheen/ros2_ws/src/DDMR/build/ddmr/install.log --single-version-externally-managed

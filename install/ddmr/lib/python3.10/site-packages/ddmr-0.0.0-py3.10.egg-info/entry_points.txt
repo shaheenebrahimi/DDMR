@@ -1,0 +1,5 @@
+[console_scripts]
+navigation_controller_node = ddmr.navigation_controller_node:main
+simulator_node = ddmr.simulator_node:main
+velocity_translator_node = ddmr.velocity_translator_node:main
+

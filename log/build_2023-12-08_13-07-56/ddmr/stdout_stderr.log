@@ -1,0 +1,58 @@
+running egg_info
+creating build/ddmr/ddmr.egg-info
+writing build/ddmr/ddmr.egg-info/PKG-INFO
+writing dependency_links to build/ddmr/ddmr.egg-info/dependency_links.txt
+writing entry points to build/ddmr/ddmr.egg-info/entry_points.txt
+writing requirements to build/ddmr/ddmr.egg-info/requires.txt
+writing top-level names to build/ddmr/ddmr.egg-info/top_level.txt
+writing manifest file 'build/ddmr/ddmr.egg-info/SOURCES.txt'
+reading manifest file 'build/ddmr/ddmr.egg-info/SOURCES.txt'
+writing manifest file 'build/ddmr/ddmr.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build
+creating /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib
+creating /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/collision.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/navigation_controller_node.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/velocity_translator_node.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/util.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/disc_robot.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/world.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/__init__.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+copying ddmr/simulator_node.py -> /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr
+/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+running install
+running install_lib
+creating /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/collision.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/navigation_controller_node.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/velocity_translator_node.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/util.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/disc_robot.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/world.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/__init__.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+copying /home/shaheen/ros2_ws/src/DDMR/build/ddmr/build/lib/ddmr/simulator_node.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/collision.py to collision.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/navigation_controller_node.py to navigation_controller_node.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/velocity_translator_node.py to velocity_translator_node.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/util.py to util.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/disc_robot.py to disc_robot.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/world.py to world.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr/simulator_node.py to simulator_node.cpython-310.pyc
+running install_data
+creating /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ament_index
+creating /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ament_index/resource_index
+creating /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ament_index/resource_index/packages
+copying resource/ddmr -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ament_index/resource_index/packages
+copying package.xml -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ddmr
+copying launch/launch.py -> /home/shaheen/ros2_ws/src/DDMR/install/ddmr/share/ddmr
+running install_egg_info
+Copying build/ddmr/ddmr.egg-info to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/python3.10/site-packages/ddmr-0.0.0-py3.10.egg-info
+running install_scripts
+Installing navigation_controller_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+Installing simulator_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+Installing velocity_translator_node script to /home/shaheen/ros2_ws/src/DDMR/install/ddmr/lib/project_4
+writing list of installed files to '/home/shaheen/ros2_ws/src/DDMR/build/ddmr/install.log'
