@@ -6,8 +6,8 @@ import rclpy.time
 
 from .disc_robot import load_disc_robot
 from sensor_msgs.msg import LaserScan, PointCloud
-from .util import line_intersection_test, point_intersection_test, circle_intersection_test, distance
-from geometry_msgs.msg import Twist, PoseStamped, Pose
+from .util import line_intersection_test, point_intersection_test, circle_intersection_test, distance, euler_from_quaternion
+from geometry_msgs.msg import Twist, PoseStamped, Pose2D
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from rclpy.node import Node
 from collections import deque
@@ -19,27 +19,24 @@ from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 
-
 class NavigationController(Node): 
     def __init__(self): 
         super().__init__('navigation_controller')
 
-        self.create_subscription(LaserScan, '/scan', self._laser_callback, 10)
+        self.dt = 0.1
         self.create_subscription(OccupancyGrid, '/map', self._map_callback, 10)
         self.create_subscription(PoseStamped, '/goal_pose', self._navigate, 10)
         self.twist_publisher = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.create_timer(0.1, self.execute_plan) # execute plan every 0.1 seconds
-        self.create_timer(0.1, self.update_pose) # update pose
+        self.create_timer(self.dt, self.execute_plan) # execute plan every 0.1 seconds
+        self.create_timer(self.dt, self._transform_callback) # execute plan every 0.1 seconds
 
-
-        self.wall_threshold = 0.27
         self.world = dict()
         self.radius = 0.2 # hardcoded for now
+        self.pose = (0,0,0)
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-        self.position = (0.8, 3.0)
 
-        self.sample_count = 5000
+        self.sample_count = 1000
         self.candidate_points = [] # points sampled
         self.prm_graph = dict() # linked list graph
         self.leaves = deque()
@@ -47,20 +44,8 @@ class NavigationController(Node):
         self.target = None
         self.connection_dist = 0.5 # min dist for graph
         self.plan = None
-
-    def update_pose(self):
-        # try:
-        #     t = self.tf_buffer.lookup_transform(
-        #         'base_link',
-        #         'world',
-        #         self.get_clock().now().to_msg())
-        #     self.position = (t.position.x, t.position.y)
-        # except TransformException as e:
-        #     self.get_logger().info(
-        #         f'Could not transform base_link to world: {e}')
-        #     return
-        pass
-
+        self.plan_step = 1
+        
     def _map_callback(self, map_msg: OccupancyGrid):
         self.world['width'] = map_msg.info.width
         self.world['height'] = map_msg.info.height
@@ -77,20 +62,32 @@ class NavigationController(Node):
                 y = self.world['resolution']/2 + r * self.world['resolution']
                 self.world['obstacles'].append((x, y)) # keep track of centers of obstacles
 
-    def _laser_callback(self, scan_msg: LaserScan):
-        pass
+    def _transform_callback(self):
+        try:
+            t = self.tf_buffer.lookup_transform(
+                'world',
+                'base_link',
+                rclpy.time.Time())
+            roll, pitch, yaw = euler_from_quaternion(t.transform.rotation.x, t.transform.rotation.y, t.transform.rotation.z, t.transform.rotation.w)
+            self.pose = (t.transform.translation.x, t.transform.translation.y, yaw)
+
+        except TransformException as e:
+            self.get_logger().info(f'Could not transform: {e}')
+            return
 
     def _navigate(self, goal: PoseStamped):
         '''Run PRM to create navigation plan'''
-        self.get_logger().info(f'Navigating to {goal.pose.position.x}, {goal.pose.position.y}')
+        self.get_logger().info(f'Destination set to ({goal.pose.position.x}, {goal.pose.position.y})')
         self.plan = None
-        self.source = (self.position[0], self.position[1])
+        self.plan_step = 1
+        self.source = (self.pose[0], self.pose[1])
         self.target = (goal.pose.position.x, goal.pose.position.y)
         if not self._validate_point(self.target): # determine if reachable
             self.get_logger().info(f'Requested position unreachable, ignoring.')
             return
         self.plan = self._create_plan()
-        self.get_logger().info(f'Plan created')
+        self.get_logger().info(f'Plan created.')
+        self.get_logger().info(f'Navigating to ({goal.pose.position.x}, {goal.pose.position.y})')
 
     def _create_plan(self):
         # Run PRM
@@ -169,15 +166,38 @@ class NavigationController(Node):
                     frontier_path.append(adjacent)
                     frontier.append(frontier_path)
 
-
-
     def execute_plan(self):
-        # msg = Twist()
-        # if self.plan:
-            # publish
-            # self.twist_publisher.publish(msg)
-        # do nothing
-        return
+        msg = Twist() # empty message
+        if self.plan and self.plan_step < len(self.plan):
+            curr_x, curr_y, curr_theta = self.pose
+            initial_x, initial_y = self.plan[self.plan_step-1]
+            destination = self.plan[self.plan_step]
+            direction = math.atan2(destination[1] - initial_y, destination[0] - initial_x)
+            delta_dir = direction - curr_theta
+            delta_pos = math.dist((curr_x, curr_y), destination)
+
+            # if not facing direction
+            if abs(delta_dir) > 0.025: # turn
+                self.get_logger().info(f'dest_dir {direction}, delta_dir {delta_dir}, my_dir {curr_theta}')
+
+                if delta_dir < 0:
+                    delta_dir += 2 * math.pi
+                turn = -1 if delta_dir < math.pi else 1
+                speed = 0.5 * abs(delta_dir) + 0.025
+                msg.linear.x = 0.0
+                msg.angular.z = turn * speed # turn other dir
+
+            elif delta_pos > 0.1: # move forward
+                speed = 0.8 * abs(delta_dir) + 0.25
+                msg.linear.x = speed
+                msg.angular.z = 0.0
+            else: # reached goal
+                self.plan_step += 1
+                if self.plan_step == len(self.plan):
+                    self.get_logger().info(f'Arrived at destination!')
+
+        # publish
+        self.twist_publisher.publish(msg)
 
 
 

@@ -11,13 +11,12 @@ import numpy as np
 from std_msgs.msg import Float64, Header
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from sensor_msgs.msg import LaserScan, PointCloud
+from geometry_msgs.msg import Pose2D
 from rclpy.node import Node
 from random import random
 
-from tf2_ros.buffer import Buffer, tf2
-from tf2_ros.transform_listener import TransformListener
+from tf2_ros.buffer import tf2
 from tf2_ros import TransformBroadcaster
-from tf2_ros.static_transform_broadcaster import StaticTransformBroadcaster
 from .util import norm, quaternion_from_euler, MAP_FREE, MAP_OBSTACLE
 
 
@@ -57,136 +56,11 @@ class Simulator(Node):
 
         self.create_subscription(Float64, '/vr', self.vl, 10)
         self.create_subscription(Float64, '/vl', self.vr , 10)
+        self.pose_publisher = self.create_publisher(Pose2D, '/pose', 10)
         self.create_timer(self.dt, self._update_pose)
         self.create_timer(self.error_rate, self._error)
 
         self.broadcaster = TransformBroadcaster(self)
-        self.init_static_frames()
-        self.tf_laser_buffer = Buffer()
-        self.tf_listener = TransformListener(self.tf_laser_buffer, self)
-
-        self.laser_rate = self.robot['laser']['rate']
-        self.laser_count : int = int(self.robot['laser']['count'])
-        self.laser_angle_min : float = float(self.robot['laser']['angle_min'])
-        self.laser_angle_max : float = float(self.robot['laser']['angle_max'])
-        self.laser_range_min : float = float(self.robot['laser']['range_min'])
-        self.laser_range_max : float = float(self.robot['laser']['range_max'])
-        self.laser_error : float = float(self.robot['laser']['error_variance']) ** .5
-        self.laser_fail : float = float(self.robot['laser']['fail_probability'])
-
-        self.scan_pub = self.create_publisher(LaserScan, '/scan', 10)
-        self.obst_pub = self.create_publisher(PointCloud, '/obs', 10)
-        self.create_timer(self.laser_rate, self.publish_scan)
-
-
-    # returns xy of the laser
-    def laser(self) -> np.ndarray:
-        laser_offset = np.array([np.cos(self.pose[2]), np.sin(self.pose[2])]) * 0.5 * self.robot['body']['radius']
-        laser2 = self.pose[:2] + laser_offset
-        return laser2
-
-
-
-
-    # given a heading and a line segement, returns the intersection point of the laser within the segement
-    def heading_interect(self, heading: np.ndarray , p1: np.ndarray, p2: np.ndarray) ->  Optional[np.ndarray]:
-
-        laser = self.laser()
-        line = p2-p1
-
-        # check if lines are parallel
-        if np.cross(heading, line) == 0:
-            return None
- 
-        n_heading = norm(heading)
-        v1 = laser - p1
-        v3 = np.array([-n_heading[1], n_heading[0]])
-        t1 = np.cross(line, v1) / np.dot(line, v3)
-        t2 = np.dot(v1, v3) / np.dot(line, v3)
-
-        # checks if intersection is within bounds
-        if t1 >= 0.0 and t2 >= 0.0 and t2 <= 1.0:
-            return laser + t1 * n_heading
-
-        return None
-
-
-    # checks along all four edges of cell if the laser scan intersects
-    def cell_intersection(self, heading: np.ndarray, row: int, col: int) -> Optional[Point32]:
-
-        min_range = float('+inf')
-        min_p = None
-
-        x = col * self.world['resolution']
-        y = row * self.world['resolution']
-
-        bottom_l = np.array([x, y])
-        bottom_r = np.array([x+self.world['resolution'], y])
-        top_l = np.array([x, y+self.world['resolution']])
-        top_r = np.array([x+self.world['resolution'], y+self.world['resolution']])
-
-        points = [
-            self.heading_interect(heading, top_r, top_l),
-            self.heading_interect(heading, bottom_r, bottom_l),
-            self.heading_interect(heading, bottom_l, top_l),
-            self.heading_interect(heading, bottom_r, top_r),
-        ]
-
-        laser = self.laser()
-
-        for p in points: 
-            if p is not None:
-                dist = np.linalg.norm(laser - p)
-                if dist < min_range:
-                    min_range = dist 
-                    min_p = Point32(x=p[0], y=p[1])
-
-        return min_p
-
-    def angle_scan(self, robot_angle: float) -> float:
-
-        # if fails should exit early
-        if random() < self.laser_fail:
-            return float('nan')
-
-        min_range = float('+inf')
-        heading = np.array([np.cos(robot_angle), np.sin(robot_angle)])
-        laser = self.laser()
-
-        for row, col in self.world['obstacles']:
-            p = self.cell_intersection(heading, row, col)
-            if p is not None:
-                dist = np.linalg.norm(laser - np.array([p.x, p.y]))
-                min_range = min(min_range, dist)
-
-            
-        if min_range < self.laser_range_min:
-            return float('-inf')
-        if min_range > self.laser_range_max:
-            return float('+inf')
-        return min_range + np.random.normal(0.0, self.laser_error)
-
-            
-
-    def publish_scan(self):
-        scan_msg = LaserScan()
-        scan_msg.header.frame_id = 'laser'
-        scan_msg.header.stamp = self.get_clock().now().to_msg()
-        angles = np.linspace(self.laser_angle_min, self.laser_angle_max, self.laser_count) + self.pose[2]
-
-        scan_msg.angle_min = self.laser_angle_min 
-        scan_msg.angle_max = self.laser_angle_max 
-        scan_msg.range_min = self.laser_range_min 
-        scan_msg.range_max = self.laser_range_max 
-        scan_msg.angle_increment = angles[1] - angles[0]
-
-        ranges = []
-        for a in angles:
-            ranges.append(self.angle_scan(a))
-
-        scan_msg.ranges = ranges
-        self.scan_pub.publish(scan_msg)
-
 
 
     def publish_world(self):
@@ -211,18 +85,6 @@ class Simulator(Node):
     def _error(self):
         self.vl_error_scalar = np.random.normal(1.0, self.vl_error)
         self.vr_error_scalar = np.random.normal(1.0, self.vr_error)
-
-    def init_static_frames(self):
-        radius = self.robot['body']['radius']
-        base_to_laser = TransformStamped()
-        base_to_laser.header.stamp = self.get_clock().now().to_msg()
-        base_to_laser.header.frame_id = 'base_link' # parent
-        base_to_laser.child_frame_id = 'laser'
-        base_to_laser.transform.translation.x = 0.5*radius
-        base_to_laser.transform.translation.y = 0.0
-        base_to_laser.transform.translation.z = 0.0
-        static_broadcaster = StaticTransformBroadcaster(self)
-        static_broadcaster.sendTransform(base_to_laser)
 
     def update_frame(self):
         world_to_base = TransformStamped()
@@ -292,6 +154,11 @@ class Simulator(Node):
         if not self.collision_test(potential_pose):
             self.pose = potential_pose # valid pose
         
+        # Publish new pose
+        msg = Pose2D()
+        msg.x, msg.y, msg.theta = self.pose[0], self.pose[1], self.pose[2]
+        self.pose_publisher.publish(msg)
+
         # Update frame
         self.update_frame()
         
@@ -307,21 +174,6 @@ class Simulator(Node):
             if intersect:
                 return True
         return False
-
-
-    # def check_collision(self):
-    #     for obstacle_row, obstacle_col in self.world['obstacles']:
-    #         cell_center_x = self.world['resolution']/2 + self.world['resolution'] * obstacle_col
-    #         cell_center_y = self.world['resolution']/2 + self.world['resolution'] * obstacle_row
-    #         # circle box collision
-    #         intersect, correction = intersection_test(
-    #             self.pose[0], self.pose[1], self.robot['body']['radius'], # circle
-    #             cell_center_x, cell_center_y, self.world['resolution'] # square
-    #         )
-    #         if intersect:
-    #             self.pose[0] += correction[0]
-    #             self.pose[1] += correction[1]
-    #             break
 
 
     def vl(self, vl_msg: Float64):
