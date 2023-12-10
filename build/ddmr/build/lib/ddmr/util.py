@@ -125,7 +125,7 @@ def circle_intersection_test(circle_x, circle_y, circle_r, square_x, square_y, s
    cornerDistance = (dist_x - square_s/2)**2 + (dist_y - square_s/2)**2
    return cornerDistance <= (circle_r**2)
 
-def line_intersection_test(line_x0, line_y0, line_x1, line_y1, square_x, square_y, square_s):
+def line_intersection_test(line_x0, line_y0, line_x1, line_y1, radius, square_x, square_y, square_s):
    '''
    Intersection test between line segment and square
    '''
@@ -134,10 +134,10 @@ def line_intersection_test(line_x0, line_y0, line_x1, line_y1, square_x, square_
       return ((line_y1 - line_y0) / (line_x1 - line_x0)) * (x - line_x0) + line_y0
    
    # Get bounds
-   square_x_min = square_x - square_s/2
-   square_x_max = square_x + square_s/2
-   square_y_min = square_y - square_s/2
-   square_y_max = square_y + square_s/2
+   square_x_min = square_x - square_s/2 - radius
+   square_x_max = square_x + square_s/2 + radius
+   square_y_min = square_y - square_s/2 - radius
+   square_y_max = square_y + square_s/2 + radius
 
    # False if NEITHER square x are in interval
    x_interval_min = min(line_x0, line_x1)
@@ -157,10 +157,3 @@ def line_intersection_test(line_x0, line_y0, line_x1, line_y1, square_x, square_
 
    return False
 
-def point_intersection_test(x, y, square_x, square_y, square_s):
-   # Check bounds
-   square_x_min = square_x - square_s/2
-   square_x_max = square_x + square_s/2
-   square_y_min = square_y - square_s/2
-   square_y_max = square_y + square_s/2
-   return x >= square_x_min and x <= square_x_max and y >= square_y_min and y <= square_y_max

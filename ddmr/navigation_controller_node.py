@@ -6,7 +6,7 @@ import rclpy.time
 
 from .disc_robot import load_disc_robot
 from sensor_msgs.msg import LaserScan, PointCloud
-from .util import line_intersection_test, point_intersection_test, circle_intersection_test, distance, euler_from_quaternion
+from .util import line_intersection_test, circle_intersection_test, distance, euler_from_quaternion
 from geometry_msgs.msg import Twist, PoseStamped, Pose2D
 from nav_msgs.msg import MapMetaData, OccupancyGrid
 from rclpy.node import Node
@@ -36,13 +36,13 @@ class NavigationController(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.sample_count = 1000
+        self.sample_count = 2500
         self.candidate_points = [] # points sampled
         self.prm_graph = dict() # linked list graph
         self.leaves = deque()
         self.source = None
         self.target = None
-        self.connection_dist = 0.5 # min dist for graph
+        self.connection_dist = 0.75 # min dist for graph
         self.plan = None
         self.plan_step = 1
         
@@ -78,16 +78,23 @@ class NavigationController(Node):
     def _navigate(self, goal: PoseStamped):
         '''Run PRM to create navigation plan'''
         self.get_logger().info(f'Destination set to ({goal.pose.position.x}, {goal.pose.position.y})')
-        self.plan = None
-        self.plan_step = 1
+        self._reset_graph()
         self.source = (self.pose[0], self.pose[1])
         self.target = (goal.pose.position.x, goal.pose.position.y)
+        
         if not self._validate_point(self.target): # determine if reachable
             self.get_logger().info(f'Requested position unreachable, ignoring.')
             return
         self.plan = self._create_plan()
         self.get_logger().info(f'Plan created.')
         self.get_logger().info(f'Navigating to ({goal.pose.position.x}, {goal.pose.position.y})')
+
+    def _reset_graph(self):
+        self.plan = None
+        self.plan_step = 1
+        self.candidate_points = [] # points sampled
+        self.prm_graph = dict() # linked list graph
+        self.leaves = deque()
 
     def _create_plan(self):
         # Run PRM
@@ -103,6 +110,13 @@ class NavigationController(Node):
             return False
         for cell_x, cell_y in self.world['obstacles']:
             if circle_intersection_test(point[0], point[1], self.radius, cell_x, cell_y, self.world['resolution']): # in obstacle
+                return False
+        return True
+    
+    def _validate_edge(self, pt0_x, pt0_y, pt1_x, pt1_y):
+
+        for cell_x, cell_y in self.world['obstacles']:
+            if line_intersection_test(pt0_x, pt0_y, pt1_x, pt1_y, self.radius, cell_x, cell_y, self.world['resolution']): # in obstacle
                 return False
         return True
     
@@ -126,7 +140,7 @@ class NavigationController(Node):
         if from_node:
             self.prm_graph[from_node].add(node) # create edge
 
-    def _update_graph(self):
+    def _expand_graph(self):
         '''Update PRM graph and return if points added'''
         updated = False
         breadth = len(self.leaves)
@@ -135,8 +149,9 @@ class NavigationController(Node):
             leaf = self.leaves.pop()
             for candidate in self.candidate_points:
                 if distance(candidate[0], candidate[1], leaf[0], leaf[1]) <= self.connection_dist:
-                    self._add_node(candidate, from_node=leaf)
-                    updated = True
+                    if self._validate_edge(candidate[0], candidate[1], leaf[0], leaf[1]):
+                        self._add_node(candidate, from_node=leaf)
+                        updated = True
         return updated
 
     def _build_graph(self):
@@ -145,7 +160,7 @@ class NavigationController(Node):
         self.prm_graph = dict()
         self._add_node(self.source)
         while self.target not in self.prm_graph.keys(): # haven't reached goal
-            if not self._update_graph(): # update graph and return false if no more reachable points
+            if not self._expand_graph(): # update graph and return false if no more reachable points
                 return False
         return True
 
@@ -178,8 +193,6 @@ class NavigationController(Node):
 
             # if not facing direction
             if abs(delta_dir) > 0.025: # turn
-                self.get_logger().info(f'dest_dir {direction}, delta_dir {delta_dir}, my_dir {curr_theta}')
-
                 if delta_dir < 0:
                     delta_dir += 2 * math.pi
                 turn = -1 if delta_dir < math.pi else 1
